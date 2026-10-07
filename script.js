@@ -1,5 +1,5 @@
 const API_URL =
-  "ここにApps ScriptのウェブアプリURL";
+  "https://script.google.com/macros/s/AKfycbyXkUUA8TlCjqENs2PD2tP2xK__lZo07jBFO8S4tYfaz8hmsTFvy8LBpcb0RDGWCvKw4g/exec";
 
 
 let currentDate = new Date();
