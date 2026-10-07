@@ -6,9 +6,11 @@ let currentDate = new Date();
 
 let events = [];
 
+let pendingAction = null;
+
 
 /* =========================
-   初期化
+初期化
 ========================= */
 
 document.addEventListener(
@@ -22,28 +24,35 @@ document.addEventListener(
 
 
 /* =========================
-   予定取得
+予定取得
 ========================= */
 
 async function loadEvents() {
 
   showLoading(true);
 
+
   try {
 
     const response =
       await fetch(
-        API_URL + "?action=getEvents"
+        API_URL +
+        "?action=getEvents"
       );
+
 
     const data =
       await response.json();
 
-    events = Array.isArray(data)
-      ? data
-      : [];
+
+    events =
+      Array.isArray(data)
+        ? data
+        : [];
+
 
     renderCalendar();
+
 
   } catch (error) {
 
@@ -55,12 +64,14 @@ async function loadEvents() {
 
   }
 
+
   showLoading(false);
+
 }
 
 
 /* =========================
-   カレンダー表示
+カレンダー
 ========================= */
 
 function renderCalendar() {
@@ -70,6 +81,7 @@ function renderCalendar() {
 
   const month =
     currentDate.getMonth();
+
 
   document.getElementById(
     "monthTitle"
@@ -81,6 +93,7 @@ function renderCalendar() {
     document.getElementById(
       "calendarDays"
     );
+
 
   calendarDays.innerHTML = "";
 
@@ -121,11 +134,17 @@ function renderCalendar() {
     i++
   ) {
 
+
     let day;
-    let date;
-    let cellMonth = month;
-    let cellYear = year;
-    let otherMonth = false;
+
+    let cellMonth =
+      month;
+
+    let cellYear =
+      year;
+
+    let otherMonth =
+      false;
 
 
     if (i < firstDay) {
@@ -136,17 +155,26 @@ function renderCalendar() {
         i +
         1;
 
+
       cellMonth--;
 
+
       if (cellMonth < 0) {
+
         cellMonth = 11;
+
         cellYear--;
+
       }
+
 
       otherMonth = true;
 
+
     } else if (
-      i >= firstDay + lastDate
+      i >=
+      firstDay +
+      lastDate
     ) {
 
       day =
@@ -155,14 +183,21 @@ function renderCalendar() {
         lastDate +
         1;
 
+
       cellMonth++;
 
+
       if (cellMonth > 11) {
+
         cellMonth = 0;
+
         cellYear++;
+
       }
 
+
       otherMonth = true;
+
 
     } else {
 
@@ -174,7 +209,7 @@ function renderCalendar() {
     }
 
 
-    date =
+    const date =
       createDateString(
         cellYear,
         cellMonth,
@@ -187,14 +222,17 @@ function renderCalendar() {
         "div"
       );
 
+
     cell.className =
       "calendar-day";
 
 
     if (otherMonth) {
+
       cell.classList.add(
         "other-month"
       );
+
     }
 
 
@@ -210,8 +248,22 @@ function renderCalendar() {
     }
 
 
+    /*
+      日付クリック
+      ↓
+      パスワード
+      ↓
+      予定追加
+    */
+
     cell.onclick =
-      () => openAddModal(date);
+      () => {
+
+        requestAddEvent(
+          date
+        );
+
+      };
 
 
     const dayNumber =
@@ -219,11 +271,14 @@ function renderCalendar() {
         "div"
       );
 
+
     dayNumber.className =
       "day-number";
 
+
     dayNumber.textContent =
       day;
+
 
     cell.appendChild(
       dayNumber
@@ -240,10 +295,12 @@ function renderCalendar() {
     dayEvents.forEach(
       event => {
 
+
         const eventElement =
           document.createElement(
             "div"
           );
+
 
         eventElement.className =
           "event " +
@@ -270,7 +327,10 @@ function renderCalendar() {
 
             e.stopPropagation();
 
-            openEditModal(event);
+
+            requestEditEvent(
+              event
+            );
 
           };
 
@@ -293,7 +353,7 @@ function renderCalendar() {
 
 
 /* =========================
-   月移動
+月変更
 ========================= */
 
 function changeMonth(
@@ -305,6 +365,7 @@ function changeMonth(
     amount
   );
 
+
   renderCalendar();
 
 }
@@ -315,13 +376,268 @@ function goToday() {
   currentDate =
     new Date();
 
+
   renderCalendar();
 
 }
 
 
 /* =========================
-   予定追加
+追加要求
+========================= */
+
+function requestAddEvent(
+  selectedDate = null
+) {
+
+  pendingAction = {
+
+    type:
+      "add",
+
+    date:
+      selectedDate
+
+  };
+
+
+  openPasswordModal();
+
+}
+
+
+/* =========================
+編集要求
+========================= */
+
+function requestEditEvent(
+  event
+) {
+
+  pendingAction = {
+
+    type:
+      "edit",
+
+    event:
+      event
+
+  };
+
+
+  openPasswordModal();
+
+}
+
+
+/* =========================
+削除要求
+========================= */
+
+function requestDeleteEvent() {
+
+  const id =
+    document.getElementById(
+      "eventId"
+    ).value;
+
+
+  if (!id) {
+    return;
+  }
+
+
+  const event =
+    events.find(
+      item =>
+        item.id === id
+    );
+
+
+  pendingAction = {
+
+    type:
+      "delete",
+
+    event:
+      event
+
+  };
+
+
+  closeModal();
+
+  openPasswordModal();
+
+}
+
+
+/* =========================
+パスワード
+========================= */
+
+function openPasswordModal() {
+
+  document.getElementById(
+    "passwordInput"
+  ).value = "";
+
+
+  document.getElementById(
+    "passwordError"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "passwordModal"
+  ).classList.add(
+    "active"
+  );
+
+
+  setTimeout(
+    () => {
+
+      document.getElementById(
+        "passwordInput"
+      ).focus();
+
+    },
+    100
+  );
+
+}
+
+
+function closePasswordModal() {
+
+  document.getElementById(
+    "passwordModal"
+  ).classList.remove(
+    "active"
+  );
+
+
+  pendingAction =
+    null;
+
+}
+
+
+/* =========================
+パスワード認証
+========================= */
+
+async function verifyPassword() {
+
+  const password =
+    document.getElementById(
+      "passwordInput"
+    ).value;
+
+
+  if (!password) {
+
+    showPasswordError();
+
+    return;
+
+  }
+
+
+  if (!pendingAction) {
+
+    return;
+
+  }
+
+
+  const action =
+    pendingAction;
+
+
+  closePasswordModal();
+
+
+  /*
+    認証成功後に実際の操作を行う
+  */
+
+  if (
+    action.type ===
+    "add"
+  ) {
+
+    openAddModal(
+      action.date
+    );
+
+    /*
+      認証済みフラグ
+    */
+
+    document.getElementById(
+      "eventForm"
+    ).dataset.password =
+      password;
+
+    return;
+
+  }
+
+
+  if (
+    action.type ===
+    "edit"
+  ) {
+
+    openEditModal(
+      action.event
+    );
+
+
+    document.getElementById(
+      "eventForm"
+    ).dataset.password =
+      password;
+
+    return;
+
+  }
+
+
+  if (
+    action.type ===
+    "delete"
+  ) {
+
+    await executeDelete(
+      action.event.id,
+      password
+    );
+
+  }
+
+}
+
+
+/* =========================
+パスワードエラー
+========================= */
+
+function showPasswordError() {
+
+  document.getElementById(
+    "passwordError"
+  ).style.display =
+    "block";
+
+}
+
+
+/* =========================
+予定追加画面
 ========================= */
 
 function openAddModal(
@@ -377,7 +693,7 @@ function openAddModal(
 
 
 /* =========================
-   予定編集
+編集画面
 ========================= */
 
 function openEditModal(
@@ -461,7 +777,7 @@ function openEditModal(
 
 
 /* =========================
-   モーダル閉じる
+モーダル
 ========================= */
 
 function closeModal() {
@@ -476,7 +792,7 @@ function closeModal() {
 
 
 /* =========================
-   予定保存
+保存
 ========================= */
 
 async function saveEvent(
@@ -484,6 +800,28 @@ async function saveEvent(
 ) {
 
   e.preventDefault();
+
+
+  const form =
+    document.getElementById(
+      "eventForm"
+    );
+
+
+  const password =
+    form.dataset.password;
+
+
+  if (!password) {
+
+    closeModal();
+
+    requestAddEvent();
+
+    return;
+
+  }
+
 
   const id =
     document.getElementById(
@@ -498,7 +836,11 @@ async function saveEvent(
         ? "update"
         : "add",
 
-    id: id,
+    id:
+      id,
+
+    password:
+      password,
 
     date:
       document.getElementById(
@@ -552,12 +894,15 @@ async function saveEvent(
       await fetch(
         API_URL,
         {
-          method: "POST",
+
+          method:
+            "POST",
 
           body:
             JSON.stringify(
               data
             )
+
         }
       );
 
@@ -571,21 +916,22 @@ async function saveEvent(
     ) {
 
       throw new Error(
-        result.message ||
-        "保存に失敗しました。"
+        result.message
       );
 
     }
 
 
+    delete form.dataset.password;
+
+
     closeModal();
+
 
     await loadEvents();
 
 
   } catch (error) {
-
-    console.error(error);
 
     alert(
       "保存に失敗しました。\n" +
@@ -601,27 +947,28 @@ async function saveEvent(
 
 
 /* =========================
-   予定削除
+削除
 ========================= */
 
-async function deleteEvent() {
+async function executeDelete(
+  id,
+  password
+) {
 
-  const id =
-    document.getElementById(
-      "eventId"
-    ).value;
+  if (!id) {
+    return;
+  }
 
 
-  if (!id) return;
-
-
-  const confirmed =
-    confirm(
+  if (
+    !confirm(
       "この予定を削除しますか？"
-    );
+    )
+  ) {
 
+    return;
 
-  if (!confirmed) return;
+  }
 
 
   showLoading(true);
@@ -633,16 +980,24 @@ async function deleteEvent() {
       await fetch(
         API_URL,
         {
-          method: "POST",
+
+          method:
+            "POST",
 
           body:
             JSON.stringify({
+
               action:
                 "delete",
 
               id:
-                id
+                id,
+
+              password:
+                password
+
             })
+
         }
       );
 
@@ -656,21 +1011,16 @@ async function deleteEvent() {
     ) {
 
       throw new Error(
-        result.message ||
-        "削除に失敗しました。"
+        result.message
       );
 
     }
 
 
-    closeModal();
-
     await loadEvents();
 
 
   } catch (error) {
-
-    console.error(error);
 
     alert(
       "削除に失敗しました。\n" +
@@ -686,25 +1036,34 @@ async function deleteEvent() {
 
 
 /* =========================
-   カテゴリ
+カテゴリ
 ========================= */
 
 function getCategoryClass(
   category
 ) {
 
-  switch (category) {
+  switch (
+    category
+  ) {
 
     case "部活動":
+
       return "club";
 
+
     case "大会・イベント":
+
       return "tournament";
 
+
     case "遠征":
+
       return "trip";
 
+
     default:
+
       return "other";
 
   }
@@ -713,7 +1072,7 @@ function getCategoryClass(
 
 
 /* =========================
-   日付
+日付
 ========================= */
 
 function createDateString(
@@ -723,15 +1082,27 @@ function createDateString(
 ) {
 
   return (
+
     year +
+
     "-" +
+
     String(
       month + 1
-    ).padStart(2, "0") +
+    ).padStart(
+      2,
+      "0"
+    ) +
+
     "-" +
+
     String(
       day
-    ).padStart(2, "0")
+    ).padStart(
+      2,
+      "0"
+    )
+
   );
 
 }
@@ -742,40 +1113,52 @@ function getTodayString() {
   const today =
     new Date();
 
+
   return createDateString(
+
     today.getFullYear(),
+
     today.getMonth(),
+
     today.getDate()
+
   );
 
 }
 
 
 /* =========================
-   HTMLエスケープ
+HTMLエスケープ
 ========================= */
 
 function escapeHTML(
   text
 ) {
 
-  return String(text)
+  return String(
+    text
+  )
+
     .replace(
       /&/g,
       "&amp;"
     )
+
     .replace(
       /</g,
       "&lt;"
     )
+
     .replace(
       />/g,
       "&gt;"
     )
+
     .replace(
       /"/g,
       "&quot;"
     )
+
     .replace(
       /'/g,
       "&#039;"
@@ -785,28 +1168,27 @@ function escapeHTML(
 
 
 /* =========================
-   ローディング
+ローディング
 ========================= */
 
 function showLoading(
   show
 ) {
 
-  const loading =
-    document.getElementById(
+  document
+    .getElementById(
       "loading"
+    )
+    .classList.toggle(
+      "active",
+      show
     );
-
-  loading.classList.toggle(
-    "active",
-    show
-  );
 
 }
 
 
 /* =========================
-   モーダル外クリック
+モーダル外クリック
 ========================= */
 
 document
@@ -823,6 +1205,52 @@ document
       ) {
 
         closeModal();
+
+      }
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "passwordModal"
+  )
+  .addEventListener(
+    "click",
+    (e) => {
+
+      if (
+        e.target.id ===
+        "passwordModal"
+      ) {
+
+        closePasswordModal();
+
+      }
+
+    }
+  );
+
+
+/* =========================
+Enterキー
+========================= */
+
+document
+  .getElementById(
+    "passwordInput"
+  )
+  .addEventListener(
+    "keydown",
+    (e) => {
+
+      if (
+        e.key ===
+        "Enter"
+      ) {
+
+        verifyPassword();
 
       }
 
