@@ -4,7 +4,9 @@
   padding: 0;
 }
 
+
 body {
+
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -13,238 +15,344 @@ body {
     sans-serif;
 
   background: #f4f7fb;
+
   color: #172033;
+
 }
 
 
 /* =========================
-   HEADER
+HEADER
 ========================= */
 
 .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e9f0;
+
+  background: white;
+
+  border-bottom:
+    1px solid #e5e9f0;
+
 }
 
+
 .header-inner {
+
   max-width: 1400px;
+
   margin: auto;
+
   padding: 22px 30px;
 
   display: flex;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
+
   align-items: center;
+
 }
+
 
 .header-sub {
+
   font-size: 11px;
+
   letter-spacing: 2px;
+
   font-weight: 700;
+
   color: #2774e6;
+
   margin-bottom: 4px;
+
 }
 
+
 .header h1 {
+
   font-size: 24px;
+
   font-weight: 800;
+
 }
 
 
 /* =========================
-   BUTTON
+BUTTON
 ========================= */
 
+button {
+
+  font-family: inherit;
+
+}
+
+
 .add-main-btn {
+
   border: none;
+
   background: #2774e6;
+
   color: white;
 
   padding: 12px 20px;
+
   border-radius: 10px;
 
   font-size: 14px;
+
   font-weight: 700;
 
   cursor: pointer;
 
-  transition: 0.2s;
+  transition: .2s;
+
 }
 
+
 .add-main-btn:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
+
+  transform:
+    translateY(-2px);
+
+  opacity: .9;
+
 }
 
 
 /* =========================
-   CONTAINER
+CONTAINER
 ========================= */
 
 .container {
+
   max-width: 1400px;
+
   margin: auto;
+
   padding: 30px;
+
 }
 
 
 /* =========================
-   CALENDAR HEADER
+CALENDAR
 ========================= */
 
 .calendar-section {
+
   background: white;
+
   border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+
+  box-shadow:
+    0 8px 30px
+    rgba(0,0,0,.05);
 
   overflow: hidden;
+
 }
 
+
 .calendar-header {
+
   padding: 20px 25px;
 
   display: flex;
-  align-items: center;
-  justify-content: space-between;
 
-  border-bottom: 1px solid #edf0f5;
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  border-bottom:
+    1px solid #edf0f5;
+
 }
+
 
 .month-area {
+
   text-align: center;
+
 }
+
 
 .month-area h2 {
+
   font-size: 22px;
+
   font-weight: 800;
+
 }
 
+
 .nav-btn {
+
   width: 42px;
+
   height: 42px;
 
   border: none;
+
   border-radius: 10px;
 
   background: #f1f4f8;
 
   font-size: 30px;
-  line-height: 1;
 
   cursor: pointer;
+
 }
 
-.nav-btn:hover {
-  background: #e7ebf1;
-}
 
 .today-btn {
+
   margin-top: 5px;
 
   border: none;
+
   background: none;
 
   color: #2774e6;
 
   font-size: 12px;
+
   font-weight: 700;
 
   cursor: pointer;
+
 }
 
 
-/* =========================
-   WEEKDAYS
-========================= */
-
 .weekdays {
+
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+
+  grid-template-columns:
+    repeat(7,1fr);
 
   background: #f8f9fb;
 
-  border-bottom: 1px solid #e8ecf2;
+  border-bottom:
+    1px solid #e8ecf2;
+
 }
 
+
 .weekdays div {
+
   padding: 12px;
 
   text-align: center;
 
   font-size: 12px;
+
   font-weight: 700;
 
   color: #6b7280;
-}
 
-.weekdays .sunday {
-  color: #e05252;
-}
-
-.weekdays .saturday {
-  color: #3976d5;
 }
 
 
-/* =========================
-   CALENDAR DAYS
-========================= */
+.sunday {
+
+  color: #e05252 !important;
+
+}
+
+
+.saturday {
+
+  color: #3976d5 !important;
+
+}
+
 
 .calendar-days {
+
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+
+  grid-template-columns:
+    repeat(7,1fr);
+
 }
 
+
 .calendar-day {
+
   min-height: 130px;
 
   padding: 8px;
 
-  border-right: 1px solid #edf0f4;
-  border-bottom: 1px solid #edf0f4;
+  border-right:
+    1px solid #edf0f4;
+
+  border-bottom:
+    1px solid #edf0f4;
 
   cursor: pointer;
 
-  transition: 0.15s;
-
   background: white;
+
 }
+
 
 .calendar-day:hover {
+
   background: #f8fbff;
+
 }
+
 
 .calendar-day.other-month {
+
   background: #fafbfc;
+
   color: #b7bec9;
+
 }
 
+
 .day-number {
+
   width: 28px;
+
   height: 28px;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   border-radius: 50%;
 
   font-size: 13px;
+
   font-weight: 700;
 
   margin-bottom: 5px;
+
 }
 
+
 .today .day-number {
+
   background: #2774e6;
+
   color: white;
+
 }
 
 
 /* =========================
-   EVENT
+EVENT
 ========================= */
 
 .event {
+
   padding: 5px 7px;
 
   margin-bottom: 4px;
@@ -252,154 +360,233 @@ body {
   border-radius: 6px;
 
   font-size: 11px;
+
   font-weight: 700;
 
   overflow: hidden;
+
   white-space: nowrap;
+
   text-overflow: ellipsis;
 
-  cursor: pointer;
 }
+
 
 .event-time {
+
   font-size: 9px;
-  opacity: 0.7;
+
+  opacity: .7;
+
   margin-right: 3px;
+
 }
+
 
 .event.club {
+
   background: #e6f0ff;
+
   color: #2464c3;
+
 }
+
 
 .event.tournament {
+
   background: #eee7ff;
+
   color: #6842bd;
+
 }
+
 
 .event.trip {
+
   background: #e5f7ed;
+
   color: #25804e;
+
 }
 
+
 .event.other {
+
   background: #fff0df;
+
   color: #a8611a;
+
 }
 
 
 /* =========================
-   LEGEND
+LEGEND
 ========================= */
 
 .legend {
+
   display: flex;
+
   gap: 20px;
 
   padding: 18px 5px;
 
   flex-wrap: wrap;
+
 }
 
+
 .legend-item {
+
   display: flex;
+
   align-items: center;
+
   gap: 7px;
 
   font-size: 12px;
+
   color: #626b79;
+
 }
 
+
 .dot {
+
   width: 10px;
+
   height: 10px;
 
   border-radius: 50%;
+
 }
+
 
 .dot.club {
+
   background: #2774e6;
+
 }
+
 
 .dot.tournament {
+
   background: #7951d6;
+
 }
+
 
 .dot.trip {
+
   background: #32a365;
+
 }
 
+
 .dot.other {
+
   background: #e08b37;
+
 }
 
 
 /* =========================
-   MODAL
+MODAL
 ========================= */
 
 .modal {
+
   position: fixed;
 
   inset: 0;
 
-  background: rgba(16, 24, 40, 0.55);
+  background:
+    rgba(16,24,40,.55);
 
   display: none;
 
   align-items: center;
+
   justify-content: center;
 
   padding: 20px;
 
   z-index: 1000;
+
 }
+
 
 .modal.active {
+
   display: flex;
+
 }
 
+
 .modal-content {
+
   width: 100%;
+
   max-width: 520px;
 
   max-height: 90vh;
+
   overflow-y: auto;
 
   background: white;
 
   border-radius: 18px;
 
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 20px 60px
+    rgba(0,0,0,.2);
+
 }
 
+
 .modal-header {
+
   padding: 22px 25px;
 
   display: flex;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
+
   align-items: flex-start;
 
-  border-bottom: 1px solid #edf0f5;
+  border-bottom:
+    1px solid #edf0f5;
+
 }
 
+
 .modal-sub {
+
   color: #2774e6;
 
   font-size: 10px;
+
   font-weight: 800;
 
   letter-spacing: 2px;
 
   margin-bottom: 4px;
+
 }
+
 
 .modal-header h2 {
+
   font-size: 20px;
+
 }
 
+
 .close-btn {
+
   border: none;
+
   background: none;
 
   font-size: 28px;
@@ -407,45 +594,63 @@ body {
   color: #7c8491;
 
   cursor: pointer;
+
 }
 
 
 /* =========================
-   FORM
+FORM
 ========================= */
 
 #eventForm {
+
   padding: 25px;
+
 }
+
 
 .form-group {
+
   margin-bottom: 18px;
+
 }
+
 
 .form-row {
+
   display: grid;
-  grid-template-columns: 1fr 1fr;
+
+  grid-template-columns:
+    1fr 1fr;
 
   gap: 15px;
+
 }
 
+
 .form-group label {
+
   display: block;
 
   margin-bottom: 7px;
 
   font-size: 12px;
+
   font-weight: 700;
 
   color: #4e5868;
+
 }
+
 
 .form-group input,
 .form-group select,
 .form-group textarea {
+
   width: 100%;
 
-  border: 1px solid #dce1e8;
+  border:
+    1px solid #dce1e8;
 
   border-radius: 9px;
 
@@ -458,42 +663,50 @@ body {
   background: white;
 
   font-family: inherit;
+
 }
 
-.form-group textarea {
-  resize: vertical;
-}
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
+
   border-color: #2774e6;
 
   box-shadow:
-    0 0 0 3px rgba(39, 116, 230, 0.1);
+    0 0 0 3px
+    rgba(39,116,230,.1);
+
 }
 
 
-/* =========================
-   FORM ACTIONS
-========================= */
-
 .form-actions {
+
   display: flex;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
+
   align-items: center;
 
   margin-top: 25px;
+
 }
 
+
 .right-actions {
+
   display: flex;
+
   gap: 10px;
+
 }
+
 
 .cancel-btn,
 .save-btn,
 .delete-btn {
+
   border: none;
 
   padding: 11px 18px;
@@ -501,38 +714,170 @@ body {
   border-radius: 9px;
 
   font-size: 13px;
+
   font-weight: 700;
 
   cursor: pointer;
+
 }
+
 
 .cancel-btn {
+
   background: #f0f2f5;
+
   color: #5e6672;
+
 }
+
 
 .save-btn {
+
   background: #2774e6;
+
   color: white;
+
 }
 
+
 .delete-btn {
+
   background: #ffe7e7;
+
   color: #d13b3b;
+
 }
 
 
 /* =========================
-   LOADING
+PASSWORD
+========================= */
+
+.password-box {
+
+  width: 100%;
+
+  max-width: 390px;
+
+  background: white;
+
+  border-radius: 18px;
+
+  padding: 32px;
+
+  text-align: center;
+
+  box-shadow:
+    0 20px 60px
+    rgba(0,0,0,.2);
+
+}
+
+
+.lock-icon {
+
+  font-size: 40px;
+
+  margin-bottom: 12px;
+
+}
+
+
+.password-box h2 {
+
+  font-size: 21px;
+
+  margin-bottom: 8px;
+
+}
+
+
+.password-box > p {
+
+  color: #697386;
+
+  font-size: 13px;
+
+  line-height: 1.7;
+
+  margin-bottom: 20px;
+
+}
+
+
+#passwordInput {
+
+  width: 100%;
+
+  padding: 13px;
+
+  border:
+    1px solid #dce1e8;
+
+  border-radius: 9px;
+
+  font-size: 15px;
+
+  outline: none;
+
+  text-align: center;
+
+}
+
+
+#passwordInput:focus {
+
+  border-color: #2774e6;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(39,116,230,.1);
+
+}
+
+
+.password-error {
+
+  display: none;
+
+  color: #d13b3b !important;
+
+  font-size: 12px !important;
+
+  margin-top: 8px;
+
+  margin-bottom: 0 !important;
+
+}
+
+
+.password-actions {
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  margin-top: 22px;
+
+}
+
+
+/* =========================
+LOADING
 ========================= */
 
 .loading {
+
   position: fixed;
 
   right: 20px;
+
   bottom: 20px;
 
   background: #172033;
+
   color: white;
 
   padding: 10px 16px;
@@ -544,85 +889,102 @@ body {
   display: none;
 
   z-index: 2000;
+
 }
 
+
 .loading.active {
+
   display: block;
+
 }
 
 
 /* =========================
-   MOBILE
+MOBILE
 ========================= */
 
-@media (max-width: 768px) {
+@media(max-width:768px) {
 
   .header-inner {
+
     padding: 18px;
 
     gap: 15px;
 
     align-items: flex-start;
+
   }
+
 
   .header h1 {
+
     font-size: 19px;
+
   }
 
+
   .add-main-btn {
+
     padding: 10px 13px;
 
     font-size: 12px;
 
     white-space: nowrap;
+
   }
+
 
   .container {
+
     padding: 12px;
+
   }
 
-  .calendar-header {
-    padding: 15px;
-  }
-
-  .month-area h2 {
-    font-size: 18px;
-  }
 
   .calendar-day {
+
     min-height: 95px;
+
     padding: 5px;
+
   }
 
+
   .day-number {
+
     width: 24px;
+
     height: 24px;
 
     font-size: 11px;
+
   }
 
+
   .event {
+
     padding: 4px;
 
     font-size: 9px;
+
   }
+
 
   .event-time {
+
     display: none;
+
   }
 
-  .weekdays div {
-    padding: 9px 2px;
-    font-size: 10px;
-  }
 
   .form-row {
+
     grid-template-columns: 1fr;
+
     gap: 0;
+
   }
 
-  .legend {
-    gap: 12px;
-  }
 
 }
