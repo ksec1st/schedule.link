@@ -539,7 +539,9 @@ async function verifyPassword() {
 
   if (!password) {
 
-    showPasswordError();
+    showPasswordError(
+      "パスワードを入力してください。"
+    );
 
     return;
 
@@ -553,71 +555,160 @@ async function verifyPassword() {
   }
 
 
-  const action =
-    pendingAction;
+  showLoading(true);
 
 
-  closePasswordModal();
-
-
-  /*
-    認証成功後に実際の操作を行う
-  */
-
-  if (
-    action.type ===
-    "add"
-  ) {
-
-    openAddModal(
-      action.date
-    );
+  try {
 
     /*
-      認証済みフラグ
-    */
+     * Apps Scriptに
+     * 本当に正しいパスワードか確認する
+     */
 
-    document.getElementById(
-      "eventForm"
-    ).dataset.password =
-      password;
+    const response =
+      await fetch(
+        API_URL,
+        {
 
-    return;
+          method: "POST",
 
-  }
+          body:
+            JSON.stringify({
+
+              action:
+                "verifyPassword",
+
+              password:
+                password
+
+            })
+
+        }
+      );
 
 
-  if (
-    action.type ===
-    "edit"
-  ) {
+    const result =
+      await response.json();
 
-    openEditModal(
-      action.event
+
+    /*
+     * パスワードが間違っていた場合
+     */
+
+    if (
+      !result.success
+    ) {
+
+      showPasswordError(
+        "パスワードが正しくありません。"
+      );
+
+      showLoading(false);
+
+      return;
+
+    }
+
+
+    /*
+     * ここまで来たら
+     * 本当に認証成功
+     */
+
+    const action =
+      pendingAction;
+
+
+    closePasswordModal();
+
+
+    /* =========================
+       予定追加
+    ========================= */
+
+    if (
+      action.type === "add"
+    ) {
+
+      openAddModal(
+        action.date
+      );
+
+
+      /*
+       * 認証済みパスワードを
+       * 保存処理用に一時保存
+       */
+
+      document
+        .getElementById(
+          "eventForm"
+        )
+        .dataset.password =
+          password;
+
+
+    }
+
+
+    /* =========================
+       予定編集
+    ========================= */
+
+    if (
+      action.type === "edit"
+    ) {
+
+      openEditModal(
+        action.event
+      );
+
+
+      document
+        .getElementById(
+          "eventForm"
+        )
+        .dataset.password =
+          password;
+
+    }
+
+
+    /* =========================
+       予定削除
+    ========================= */
+
+    if (
+      action.type === "delete"
+    ) {
+
+      await executeDelete(
+
+        action.event.id,
+
+        password
+
+      );
+
+    }
+
+
+    pendingAction =
+      null;
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    showPasswordError(
+      "認証に失敗しました。もう一度お試しください。"
     );
 
-
-    document.getElementById(
-      "eventForm"
-    ).dataset.password =
-      password;
-
-    return;
-
   }
 
 
-  if (
-    action.type ===
-    "delete"
-  ) {
-
-    await executeDelete(
-      action.event.id,
-      password
-    );
-
-  }
+  showLoading(false);
 
 }
 
@@ -626,11 +717,22 @@ async function verifyPassword() {
 パスワードエラー
 ========================= */
 
-function showPasswordError() {
+function showPasswordError(
+  message
+) {
 
-  document.getElementById(
-    "passwordError"
-  ).style.display =
+  const error =
+    document.getElementById(
+      "passwordError"
+    );
+
+
+  error.textContent =
+    message ||
+    "パスワードが正しくありません。";
+
+
+  error.style.display =
     "block";
 
 }
