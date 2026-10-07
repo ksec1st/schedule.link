@@ -1163,6 +1163,9 @@ function getCategoryClass(
 
       return "trip";
 
+    case "休日":
+
+      return "holiday";
 
     default:
 
