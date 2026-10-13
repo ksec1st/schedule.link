@@ -2,59 +2,32 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>部活動スケジュール｜KSEC 1st</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="favicon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>すけじゅーる｜KSEC 1st</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.png">
 </head>
 <body>
 <header class="header">
-  <div class="header-inner">
-    <div>
-      <p class="header-sub">KyotoShoeiEsportsClub</p>
-      <h1>ActiveSchedule</h1>
-    </div>
-    <a class="admin-link" href="admin.html">管理者ページ ↗</a>
-  </div>
+<div class="header-inner">
+<div><p class="header-sub">KSEC ActiveSchedule</p><h1>すけじゅーる</h1></div><a class="admin-link" href="admin.html">管理者ページ ↗</a></div>
 </header>
 
 <main class="container">
-  <section class="calendar-section">
-    <div class="calendar-header">
-      <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
-      <div class="month-area">
-        <h2 id="monthTitle"></h2>
-        <button class="today-btn" onclick="goToday()">今日</button>
-      </div>
-      <button class="nav-btn" onclick="changeMonth(1)">›</button>
-    </div>
+<section class="calendar-section">
+<div class="calendar-header"><button class="nav-btn" onclick="changeMonth(-1)">‹</button><div class="month-area"><h2 id="monthTitle"></h2><button class="today-btn" onclick="goToday()">今日</button></div>
+<button class="nav-btn" onclick="changeMonth(1)">›</button></div>
+<div class="calendar-scroll"><div class="calendar"><div class="weekdays"><div class="sunday">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="saturday">土</div></div>
+<div id="calendarDays" class="calendar-days"></div></div></div>
+</section>
 
-    <div class="calendar-scroll">
-      <div class="calendar">
-        <div class="weekdays">
-          <div class="sunday">日</div><div>月</div><div>火</div>
-          <div>水</div><div>木</div><div>金</div><div class="saturday">土</div>
-        </div>
-        <div id="calendarDays" class="calendar-days"></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="legend" id="legend"></section>
+<section class="legend" id="legend"></section>
 </main>
 
 <div id="detailModal" class="modal" onclick="if(event.target===this)closeDetail()">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div><p class="modal-sub">SCHEDULE DETAILS</p><h2 id="detailTitle"></h2></div>
-      <button class="close-btn" onclick="closeDetail()">×</button>
-    </div>
-    <p id="detailDate" class="detail-date"></p>
-    <span id="detailCategory" class="category-badge"></span>
-    <div id="detailDescription" class="detail-description"></div>
-  </div>
-</div>
+<div class="modal-content"><div class="modal-header"><div><p class="modal-sub">SCHEDULE DETAILS</p><h2 id="detailTitle"></h2></div><button class="close-btn" onclick="closeDetail()">×</button></div>
+<p id="detailDate" class="detail-date"></p><span id="detailCategory" class="category-badge"></span><div id="detailDescription" class="detail-description"></div></div></div>
 
 <div id="loading" class="loading">読み込み中...</div>
 <script src="script.js"></script>
