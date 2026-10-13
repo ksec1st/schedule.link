@@ -1,83 +1,62 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>部活動スケジュール｜KSEC 1st</title>
-<link rel="stylesheet"href="style.css">
-<link rel="icon" href="favicon.png" type="image/x-icon">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>部活動スケジュール｜KSEC 1st</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.png">
 </head>
 <body>
 <header class="header">
-<div class="header-inner"><div>
-<p class="header-sub">KyotoShoeiEsportsClub</p><h1>ActiveSchedule</h1></div><button class="add-main-btn" onclick="requestAddEvent()">＋ 予定を追加</button></div>
+  <div class="header-inner">
+    <div>
+      <p class="header-sub">KyotoShoeiEsportsClub</p>
+      <h1>ActiveSchedule</h1>
+    </div>
+    <a class="admin-link" href="admin.html">管理者ページ ↗</a>
+  </div>
 </header>
 
 <main class="container">
-<section class="calendar-section">
-<div class="calendar-header">
-<button class="nav-btn" onclick="changeMonth(-1)">‹</button>
-<div class="month-area"><h2 id="monthTitle">2026年10月</h2><button class="today-btn" onclick="goToday()">今日</button></div><button class="nav-btn"onclick="changeMonth(1)">›</button></div>
-<div class="calendar"><div class="weekdays"><div class="sunday">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="saturday">土</div></div><div id="calendarDays" class="calendar-days"></div></div>
-</section>
+  <section class="calendar-section">
+    <div class="calendar-header">
+      <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="month-area">
+        <h2 id="monthTitle"></h2>
+        <button class="today-btn" onclick="goToday()">今日</button>
+      </div>
+      <button class="nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
 
-<section class="legend">
-<div class="legend-item"><span class="dot club"></span>部活動</div>
-<div class="legend-item"><span class="dot tournament"></span>大会・イベント</div>
-<div class="legend-item"><span class="dot trip"></span>遠征</div>
-<div class="legend-item"><span class="dot holiday"></span>休日</div>
-<div class="legend-item"><span class="dot other"></span>その他</div>
-</section>
+    <div class="calendar-scroll">
+      <div class="calendar">
+        <div class="weekdays">
+          <div class="sunday">日</div><div>月</div><div>火</div>
+          <div>水</div><div>木</div><div>金</div><div class="saturday">土</div>
+        </div>
+        <div id="calendarDays" class="calendar-days"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="legend" id="legend"></section>
 </main>
 
-<!-- 予定モーダル -->
-<div id="eventModal" class="modal"><div class="modal-content"><div class="modal-header">
-<div>
-<p class="modal-sub">SCHEDULE</p><h2 id="modalTitle">予定を追加</h2></div><button class="close-btn"onclick="closeModal()">×</button></div><form id="eventForm" onsubmit="saveEvent(event)"><input type="hidden" id="eventId">
-<div class="form-group"><label>日付</label>
-<input type="date" id="eventDate" required></div>
-<div class="form-row"><div class="form-group"><label>開始</label><input type="time" id="startTime"></div>
-<div class="form-group"><label>終了</label><input type="time"id="endTime"></div></div>
-<div class="form-group">
-<label>予定名</label><input type="text" id="eventTitle" placeholder="例：通常部活動" required></div>
-<div class="form-group">
-<label>場所</label><input type="text"id="location" placeholder="空欄設定可能"></div>
-<div class="form-group"><label>カテゴリ</label>
-<select id="category">
-<option value="部活動">部活動</option>
-<option value="大会・イベント">大会・イベント</option>
-<option value="遠征">遠征</option>
-<option value="休日">休日</option>
-<option value="その他">その他</option>
-</select>
-</div>
-<div class="form-group">
-<label>内容</label>
-<textarea id="description" placeholder="予定の詳細など"></textarea>
-</div>
-<div class="form-group">
-<label>登録者</label>
-<input type="text" id="author" placeholder="例：admin">
+<div id="detailModal" class="modal" onclick="if(event.target===this)closeDetail()">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div><p class="modal-sub">SCHEDULE DETAILS</p><h2 id="detailTitle"></h2></div>
+      <button class="close-btn" onclick="closeDetail()">×</button>
+    </div>
+    <p id="detailDate" class="detail-date"></p>
+    <span id="detailCategory" class="category-badge"></span>
+    <div id="detailDescription" class="detail-description"></div>
+  </div>
 </div>
 
-<div class="form-actions">
-<button type="button" id="deleteBtn" class="delete-btn" onclick="requestDeleteEvent()" style="display:none;">削除</button>
-<div class="right-actions">
-<button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
-<button type="submit" class="save-btn">Save</button>
-</div></div></form></div></div>
-<!-- パスワードモーダル -->
-
-<div id="passwordModal"class="modal">
-<div class="password-box"><div class="lock-icon">🔐</div><h2>管理者認証</h2><p>この操作には<br>管理者パスワードが必要です。</p>
-<input type="password" id="passwordInput" placeholder="パスワード"autocomplete="off">
-<p id="passwordError" class="password-error">パスワードが正しくありません。</p>
-<div class="password-actions">
-<button class="cancel-btn" onclick="closePasswordModal()">キャンセル</button>
-<button class="save-btn" onclick="verifyPassword()">認証する</button>
-</div></div></div>
 <div id="loading" class="loading">読み込み中...</div>
-
 <script src="script.js"></script>
 </body>
 </html>
