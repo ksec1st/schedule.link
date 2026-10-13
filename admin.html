@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理者ページ｜KSEC 1st</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <p>KSEC 1st / ADMINISTRATION</p>
+    <h1>Schedule Manager</h1>
+  </div>
+  <a href="index.html">公開ページへ ↗</a>
+</header>
+
+<main class="wrap">
+  <section id="loginPanel" class="panel login-panel">
+    <h2>管理者認証</h2>
+    <p>管理者パスワードを入力してください。</p>
+    <form id="loginForm">
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="パスワード" required>
+      <button class="primary" type="submit">ログイン</button>
+    </form>
+    <p id="loginError" class="error"></p>
+  </section>
+
+  <div id="adminApp" hidden>
+    <div class="toolbar">
+      <h2>管理メニュー</h2>
+      <button id="logoutBtn" class="secondary">ログアウト</button>
+    </div>
+
+    <section class="panel">
+      <h2 id="formTitle">予定を追加</h2>
+      <form id="eventForm">
+        <input id="editId" type="hidden">
+
+        <label>日程を選択</label>
+        <div class="date-picker-row">
+          <input id="dateInput" type="date">
+          <button type="button" id="addDateBtn" class="secondary">日程を追加</button>
+        </div>
+        <div id="selectedDates" class="chips"></div>
+
+        <label for="eventTitle">予定名</label>
+        <input id="eventTitle" type="text" placeholder="例：通常部活動" required>
+
+        <label for="eventCategory">カテゴリ</label>
+        <select id="eventCategory" required></select>
+
+        <label for="eventDescription">内容</label>
+        <textarea id="eventDescription" rows="4" placeholder="予定の詳細"></textarea>
+
+        <div class="buttons">
+          <button type="submit" class="primary">保存する</button>
+          <button type="button" id="resetFormBtn" class="secondary">入力をリセット</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>登録済みの予定</h2>
+      <div id="eventList" class="item-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>カテゴリ管理</h2>
+      <form id="categoryForm">
+        <input id="categoryEditId" type="hidden">
+        <label for="categoryName">カテゴリ名</label>
+        <input id="categoryName" type="text" placeholder="例：練習試合" required>
+        <label for="categoryColor">カテゴリカラー</label>
+        <div class="color-row">
+          <input id="categoryColor" type="color" value="#2774E6">
+          <span id="colorCode">#2774E6</span>
+        </div>
+        <div class="buttons">
+          <button type="submit" class="primary">カテゴリを保存</button>
+          <button type="button" id="resetCategoryBtn" class="secondary">リセット</button>
+        </div>
+      </form>
+      <div id="categoryList" class="item-list"></div>
+    </section>
+  </div>
+
+  <p id="statusMessage" role="status"></p>
+</main>
+<script src="admin.js"></script>
+</body>
+</html>
