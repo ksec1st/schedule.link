@@ -3,92 +3,176 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理者ページ｜KSEC 1st</title>
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-<header class="topbar">
-  <div>
-    <p>KSEC 1st / ADMINISTRATION</p>
-    <h1>Schedule Manager</h1>
-  </div>
-  <a href="index.html">公開ページへ ↗</a>
-</header>
-
-<main class="wrap">
-  <section id="loginPanel" class="panel login-panel">
-    <h2>管理者認証</h2>
-    <p>管理者パスワードを入力してください。</p>
-    <form id="loginForm">
-      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="パスワード" required>
-      <button class="primary" type="submit">ログイン</button>
-    </form>
-    <p id="loginError" class="error"></p>
-  </section>
-
-  <div id="adminApp" hidden>
-    <div class="toolbar">
-      <h2>管理メニュー</h2>
-      <button id="logoutBtn" class="secondary">ログアウト</button>
+  <header class="admin-header">
+    <div>
+      <h1>KSEC 1st</h1>
+      <p>スケジュール管理</p>
     </div>
+    <a href="index.html" class="back-link">公開カレンダーへ戻る</a>
+  </header>
 
-    <section class="panel">
-      <h2 id="formTitle">予定を追加</h2>
-      <form id="eventForm">
-        <input id="editId" type="hidden">
-
-        <label>日程を選択</label>
-        <div class="date-picker-row">
-          <input id="dateInput" type="date">
-          <button type="button" id="addDateBtn" class="secondary">日程を追加</button>
-        </div>
-        <div id="selectedDates" class="chips"></div>
-
-        <label for="eventTitle">予定名</label>
-        <input id="eventTitle" type="text" placeholder="例：通常部活動" required>
-
-        <label for="eventCategory">カテゴリ</label>
-        <select id="eventCategory" required></select>
-
-        <label for="eventDescription">内容</label>
-        <textarea id="eventDescription" rows="4" placeholder="予定の詳細"></textarea>
-
-        <div class="buttons">
-          <button type="submit" class="primary">保存する</button>
-          <button type="button" id="resetFormBtn" class="secondary">入力をリセット</button>
-        </div>
+  <main class="admin-container">
+    <!-- ログイン -->
+    <section id="loginPanel" class="panel">
+      <h2>管理者ログイン</h2>
+      <form id="loginForm">
+        <label for="loginPassword">管理者パスワード</label>
+        <input
+          type="password"
+          id="loginPassword"
+          autocomplete="current-password"
+          required
+        >
+        <button type="submit">ログイン</button>
+        <p id="loginMessage" class="message" aria-live="polite"></p>
       </form>
     </section>
 
-    <section class="panel">
-      <h2>カテゴリ管理</h2>
-      <form id="categoryForm">
-        <input id="categoryEditId" type="hidden">
-        <label for="categoryName">カテゴリ名</label>
-        <input id="categoryName" type="text" placeholder="例：練習試合" required>
-        <label for="categoryColor">カテゴリカラー</label>
-        <div class="color-row">
-          <input id="categoryColor" type="color" value="#2774E6">
-          <span id="colorCode">#2774E6</span>
-        </div>
-        <div class="buttons">
-          <button type="submit" class="primary">カテゴリを保存</button>
-          <button type="button" id="resetCategoryBtn" class="secondary">リセット</button>
-        </div>
-      </form>
-      <div id="categoryList" class="item-list"></div>
-    </section>
+    <!-- 管理画面 -->
+    <div id="adminApp" hidden>
+      <div class="admin-toolbar">
+        <h2>管理メニュー</h2>
+        <button type="button" id="logoutButton" class="secondary-button">
+          ログアウト
+        </button>
+      </div>
 
-    <section class="panel">
-      <h2>登録済みの予定</h2>
-      <div id="eventList" class="item-list"></div>
-    </section>
-    
-  </div>
+      <!-- 日程設定 -->
+      <section class="panel">
+        <h2 id="scheduleFormHeading">日程設定</h2>
+        <p class="help-text">
+          開始日から終了日まで、毎日に同じ予定を登録します。
+          1日のみの場合は、開始日と終了日に同じ日付を指定してください。
+        </p>
 
-  <p id="statusMessage" role="status"></p>
-</main>
-<script src="admin.js"></script>
+        <form id="scheduleForm">
+          <input type="hidden" id="editingEventId">
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="startDate">開始日 <span class="required">必須</span></label>
+              <input type="date" id="startDate" required>
+            </div>
+
+            <div class="form-field">
+              <label for="endDate">終了日 <span class="required">必須</span></label>
+              <input type="date" id="endDate" required>
+            </div>
+          </div>
+
+          <p id="periodPreview" class="help-text" aria-live="polite">
+            開始日と終了日を選択してください。
+          </p>
+
+          <div class="form-field">
+            <label for="eventTitle">予定名 <span class="required">必須</span></label>
+            <input
+              type="text"
+              id="eventTitle"
+              maxlength="100"
+              placeholder="例：秋季大会"
+              required
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="eventCategory">カテゴリ <span class="required">必須</span></label>
+            <select id="eventCategory" required>
+              <option value="">カテゴリを読み込み中...</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="eventDescription">内容・詳細</label>
+            <textarea
+              id="eventDescription"
+              rows="4"
+              maxlength="2000"
+              placeholder="予定の詳細を入力してください。"
+            ></textarea>
+          </div>
+
+          <div class="button-row">
+            <button type="submit" id="saveEventButton">期間を指定して登録</button>
+            <button
+              type="button"
+              id="cancelEditButton"
+              class="secondary-button"
+              hidden
+            >
+              編集をキャンセル
+            </button>
+          </div>
+
+          <p id="scheduleMessage" class="message" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <!-- 登録済み予定 -->
+      <section class="panel">
+        <h2>登録済みの日程</h2>
+        <p class="help-text">
+          期間登録された予定は、日付ごとに表示されます。
+          編集・削除は1日分ずつ行います。
+        </p>
+        <div id="eventList" class="event-list">
+          読み込み中...
+        </div>
+      </section>
+
+      <!-- カテゴリ管理 -->
+      <section class="panel">
+        <h2>カテゴリ管理</h2>
+
+        <form id="categoryForm">
+          <input type="hidden" id="editingCategoryId">
+
+          <div class="form-field">
+            <label for="categoryName">カテゴリ名</label>
+            <input
+              type="text"
+              id="categoryName"
+              maxlength="50"
+              placeholder="例：部活動"
+              required
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="categoryColor">カテゴリカラー</label>
+            <div class="color-field">
+              <input type="color" id="categoryColor" value="#2774E6" required>
+              <span id="categoryColorCode">#2774E6</span>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="submit" id="saveCategoryButton">カテゴリを追加</button>
+            <button
+              type="button"
+              id="cancelCategoryEditButton"
+              class="secondary-button"
+              hidden
+            >
+              編集をキャンセル
+            </button>
+          </div>
+
+          <p id="categoryMessage" class="message" aria-live="polite"></p>
+        </form>
+
+        <div id="categoryList" class="category-list">
+          読み込み中...
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="admin.js"></script>
 </body>
 </html>
