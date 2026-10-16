@@ -1,6 +1,7 @@
+
 /* ==================================================
    KSEC 1st スケジュール管理
-   期間単位の表示・編集・削除対応
+   期間表示・編集・削除 + Discord通知
 ================================================== */
 
 const API_URL =
@@ -10,11 +11,11 @@ let password = "";
 let events = [];
 let categories = [];
 
+const $ = id => document.getElementById(id);
+
 /* ==================================================
    共通処理
 ================================================== */
-
-const $ = id => document.getElementById(id);
 
 async function readJson(response) {
   const text = await response.text();
@@ -23,7 +24,6 @@ async function readJson(response) {
     return JSON.parse(text);
   } catch (error) {
     console.error("サーバーからの返答:", text);
-
     throw new Error(
       "サーバーの返答を読み取れません。API_URLとApps Scriptのデプロイを確認してください。"
     );
@@ -38,9 +38,7 @@ async function apiGet(action) {
   const result = await readJson(response);
 
   if (!response.ok || !Array.isArray(result)) {
-    throw new Error(
-      result.message || "データを取得できませんでした。"
-    );
+    throw new Error(result.message || "データを取得できませんでした。");
   }
 
   return result;
@@ -62,9 +60,7 @@ async function apiPost(action, data = {}) {
   const result = await readJson(response);
 
   if (!response.ok || result.success !== true) {
-    throw new Error(
-      result.message || "処理に失敗しました。"
-    );
+    throw new Error(result.message || "処理に失敗しました。");
   }
 
   return result;
@@ -72,13 +68,9 @@ async function apiPost(action, data = {}) {
 
 function showMessage(id, message, isError = false) {
   const element = $(id);
-
   element.textContent = message;
   element.classList.toggle("error", isError);
-  element.classList.toggle(
-    "success",
-    !isError && !!message
-  );
+  element.classList.toggle("success", !isError && !!message);
 }
 
 function escapeHTML(value) {
@@ -107,6 +99,51 @@ function todayString() {
 }
 
 /* ==================================================
+   Discord通知チェックボックスを追加
+================================================== */
+
+function setupDiscordCheckbox() {
+  if ($("notifyDiscord")) return;
+
+  const saveButton = $("saveEventButton");
+  if (!saveButton || !saveButton.parentNode) return;
+
+  const wrapper = document.createElement("label");
+  wrapper.id = "discordNotifyWrapper";
+
+  wrapper.style.cssText = [
+    "display:flex",
+    "align-items:center",
+    "gap:10px",
+    "margin:14px 0",
+    "padding:12px 14px",
+    "border:1px solid #d7e0ed",
+    "border-radius:10px",
+    "background:#f5f8fd",
+    "cursor:pointer",
+    "font-size:14px"
+  ].join(";");
+
+  wrapper.innerHTML = `
+    <input
+      type="checkbox"
+      id="notifyDiscord"
+      style="width:18px;height:18px;flex-shrink:0;cursor:pointer;"
+    >
+    <span>
+      <strong style="display:block;color:#172338;">
+        Discordに通知する
+      </strong>
+      <small style="display:block;margin-top:3px;color:#64748b;">
+        チェックを入れた場合のみ、登録・更新内容をDiscordに送信します。
+      </small>
+    </span>
+  `;
+
+  saveButton.parentNode.insertBefore(wrapper, saveButton);
+}
+
+/* ==================================================
    期間の日付を生成
 ================================================== */
 
@@ -128,9 +165,7 @@ function getDatesBetween(startDate, endDate) {
   }
 
   if (start > end) {
-    throw new Error(
-      "終了日は開始日以降の日付にしてください。"
-    );
+    throw new Error("終了日は開始日以降の日付にしてください。");
   }
 
   const oneDay = 24 * 60 * 60 * 1000;
@@ -138,9 +173,7 @@ function getDatesBetween(startDate, endDate) {
     Math.round((end.getTime() - start.getTime()) / oneDay) + 1;
 
   if (dayCount > 366) {
-    throw new Error(
-      "一度に登録できる期間は366日以内です。"
-    );
+    throw new Error("一度に登録できる期間は366日以内です。");
   }
 
   const dates = [];
@@ -175,6 +208,33 @@ function updatePeriodPreview() {
 }
 
 /* ==================================================
+   Discord通知結果のメッセージ
+================================================== */
+
+function getSaveMessage(action, notification) {
+  const base = action === "update"
+    ? "予定を更新しました。"
+    : "予定を登録しました。";
+
+  if (!notification || notification.skipped) {
+    return { message: base, error: false };
+  }
+
+  if (notification.sent) {
+    return {
+      message: base + " Discordにも通知しました。",
+      error: false
+    };
+  }
+
+  return {
+    message: base + " ただし、Discord通知に失敗しました：" +
+      (notification.error || "設定を確認してください。"),
+    error: true
+  };
+}
+
+/* ==================================================
    期間予定をグループ化
 ================================================== */
 
@@ -182,11 +242,6 @@ function groupEventsByPeriod(sourceEvents) {
   const groups = new Map();
 
   sourceEvents.forEach(item => {
-    /*
-      新しい予定はgroupIdでまとめる。
-      既存予定は予定名・カテゴリ・内容が一致する
-      連続日付をまとめる。
-    */
     const key = item.groupId
       ? `group:${item.groupId}`
       : `legacy:${JSON.stringify([
@@ -195,20 +250,14 @@ function groupEventsByPeriod(sourceEvents) {
           item.description || ""
         ])}`;
 
-    if (!groups.has(key)) {
-      groups.set(key, []);
-    }
-
+    if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(item);
   });
 
   const result = [];
 
   groups.forEach((items, key) => {
-    items.sort((a, b) =>
-      a.date.localeCompare(b.date)
-    );
-
+    items.sort((a, b) => a.date.localeCompare(b.date));
     let current = [];
 
     function pushRange() {
@@ -235,15 +284,12 @@ function groupEventsByPeriod(sourceEvents) {
       }
 
       const previous = current[current.length - 1];
-
       const next = new Date(`${previous.date}T00:00:00Z`);
       next.setUTCDate(next.getUTCDate() + 1);
 
       const nextDate = next.toISOString().slice(0, 10);
-
       const sameGroup =
-        item.groupId &&
-        item.groupId === previous.groupId;
+        item.groupId && item.groupId === previous.groupId;
 
       if (item.date === nextDate || sameGroup) {
         current.push(item);
@@ -269,7 +315,6 @@ $("loginForm").addEventListener("submit", async event => {
   event.preventDefault();
 
   const inputPassword = $("loginPassword").value;
-
   showMessage("loginMessage", "確認しています...");
 
   try {
@@ -291,7 +336,6 @@ $("loginForm").addEventListener("submit", async event => {
     }
 
     password = inputPassword;
-
     $("loginPanel").hidden = true;
     $("adminApp").hidden = false;
 
@@ -308,13 +352,11 @@ $("loginForm").addEventListener("submit", async event => {
 $("logoutButton").addEventListener("click", () => {
   password = "";
   $("loginPassword").value = "";
-
   $("adminApp").hidden = true;
   $("loginPanel").hidden = false;
 
   resetScheduleForm();
   resetCategoryForm();
-
   showMessage("loginMessage", "");
 });
 
@@ -357,33 +399,22 @@ function renderCategoryOptions() {
 
   categories.forEach(category => {
     const option = document.createElement("option");
-
     option.value = category.name;
     option.textContent = category.name;
-
     select.appendChild(option);
   });
 
-  if (categories.some(
-    category => category.name === selectedValue
-  )) {
+  if (categories.some(c => c.name === selectedValue)) {
     select.value = selectedValue;
   }
 }
 
 /* ==================================================
-   日程登録・期間編集
+   予定登録・編集
 ================================================== */
 
-$("startDate").addEventListener(
-  "change",
-  updatePeriodPreview
-);
-
-$("endDate").addEventListener(
-  "change",
-  updatePeriodPreview
-);
+$("startDate").addEventListener("change", updatePeriodPreview);
+$("endDate").addEventListener("change", updatePeriodPreview);
 
 $("scheduleForm").addEventListener("submit", async event => {
   event.preventDefault();
@@ -394,49 +425,49 @@ $("scheduleForm").addEventListener("submit", async event => {
   const title = $("eventTitle").value.trim();
   const category = $("eventCategory").value;
   const description = $("eventDescription").value.trim();
+  const sendDiscord = $("notifyDiscord")?.checked === true;
 
   try {
-    if (!title) {
-      throw new Error("予定名を入力してください。");
-    }
-
-    if (!category) {
-      throw new Error("カテゴリを選択してください。");
-    }
+    if (!title) throw new Error("予定名を入力してください。");
+    if (!category) throw new Error("カテゴリを選択してください。");
 
     const dates = getDatesBetween(startDate, endDate);
+    let result;
+    let action;
 
     if (editingValue) {
-      const ids = JSON.parse(editingValue);
+      action = "update";
 
-      await apiPost("updateEvent", {
-        ids,
+      result = await apiPost("updateEvent", {
+        ids: JSON.parse(editingValue),
         dates,
         title,
         category,
-        description
+        description,
+        sendDiscord
       });
-
-      showMessage(
-        "scheduleMessage",
-        "期間の予定を更新しました。"
-      );
     } else {
-      await apiPost("addEvents", {
+      action = "add";
+
+      result = await apiPost("addEvents", {
         dates,
         title,
         category,
-        description
+        description,
+        sendDiscord
       });
-
-      showMessage(
-        "scheduleMessage",
-        `${formatDate(startDate)}〜${formatDate(endDate)}の予定を登録しました。`
-      );
     }
+
+    const notice = getSaveMessage(action, result.data?.notification);
 
     resetScheduleForm();
     await refreshAll();
+
+    showMessage(
+      "scheduleMessage",
+      notice.message,
+      notice.error
+    );
   } catch (error) {
     showMessage(
       "scheduleMessage",
@@ -448,14 +479,16 @@ $("scheduleForm").addEventListener("submit", async event => {
 
 function resetScheduleForm() {
   $("scheduleForm").reset();
-
   $("editingEventId").value = "";
+
   $("scheduleFormHeading").textContent = "日程設定";
   $("saveEventButton").textContent = "期間を指定して登録";
   $("cancelEditButton").hidden = true;
 
   $("startDate").value = todayString();
   $("endDate").value = todayString();
+
+  if ($("notifyDiscord")) $("notifyDiscord").checked = false;
 
   updatePeriodPreview();
 }
@@ -467,7 +500,6 @@ $("cancelEditButton").addEventListener("click", () => {
 
 /* ==================================================
    登録済み予定一覧
-   期間単位で1件ずつ表示
 ================================================== */
 
 function renderEvents() {
@@ -475,16 +507,12 @@ function renderEvents() {
   const periodEvents = groupEventsByPeriod(events);
 
   if (!periodEvents.length) {
-    container.textContent =
-      "登録されている予定はありません。";
+    container.textContent = "登録されている予定はありません。";
     return;
   }
 
   container.innerHTML = periodEvents.map(item => {
-    const category = categories.find(
-      entry => entry.name === item.category
-    );
-
+    const category = categories.find(c => c.name === item.category);
     const color = category?.color || "#64748B";
 
     const periodLabel = item.startDate === item.endDate
@@ -494,13 +522,8 @@ function renderEvents() {
     return `
       <article class="event-item">
         <div class="event-item-main">
-          <div class="event-date">
-            ${escapeHTML(periodLabel)}
-          </div>
-
-          <div class="event-title">
-            ${escapeHTML(item.title)}
-          </div>
+          <div class="event-date">${escapeHTML(periodLabel)}</div>
+          <div class="event-title">${escapeHTML(item.title)}</div>
 
           <span
             class="event-category"
@@ -534,15 +557,8 @@ function renderEvents() {
   }).join("");
 }
 
-/* ==================================================
-   期間予定の編集・削除
-================================================== */
-
 $("eventList").addEventListener("click", async event => {
-  const button = event.target.closest(
-    "button[data-action]"
-  );
-
+  const button = event.target.closest("button[data-action]");
   if (!button) return;
 
   const item = groupEventsByPeriod(events).find(
@@ -552,20 +568,19 @@ $("eventList").addEventListener("click", async event => {
   if (!item) return;
 
   if (button.dataset.action === "edit") {
-    // 期間に含まれるすべての行IDを保持
-    $("editingEventId").value =
-      JSON.stringify(item.ids);
-
+    $("editingEventId").value = JSON.stringify(item.ids);
     $("startDate").value = item.startDate;
     $("endDate").value = item.endDate;
     $("eventTitle").value = item.title;
     $("eventCategory").value = item.category;
-    $("eventDescription").value =
-      item.description || "";
+    $("eventDescription").value = item.description || "";
 
     $("scheduleFormHeading").textContent = "期間を編集";
     $("saveEventButton").textContent = "変更を保存";
     $("cancelEditButton").hidden = false;
+
+    // 通知は編集画面でも毎回チェックして選択
+    if ($("notifyDiscord")) $("notifyDiscord").checked = false;
 
     updatePeriodPreview();
 
@@ -585,24 +600,16 @@ $("eventList").addEventListener("click", async event => {
 
     const confirmed = confirm(
       `次の予定を期間ごと削除しますか？\n\n` +
-      `${periodLabel}\n` +
-      `${item.title}\n\n` +
-      `期間内の${item.ids.length}日分が削除されます。`
+      `${periodLabel}\n${item.title}\n\n` +
+      `期間内の${item.ids.length}日分が削除されます。\nDiscordへの通知は行いません。`
     );
 
     if (!confirmed) return;
 
     try {
-      await apiPost("deleteEvent", {
-        ids: item.ids
-      });
-
-      showMessage(
-        "scheduleMessage",
-        "期間の予定をまとめて削除しました。"
-      );
-
+      await apiPost("deleteEvent", { ids: item.ids });
       await refreshAll();
+      showMessage("scheduleMessage", "期間の予定をまとめて削除しました。");
     } catch (error) {
       showMessage(
         "scheduleMessage",
@@ -630,31 +637,14 @@ $("categoryForm").addEventListener("submit", async event => {
   const color = $("categoryColor").value.toUpperCase();
 
   try {
-    if (!name) {
-      throw new Error("カテゴリ名を入力してください。");
-    }
+    if (!name) throw new Error("カテゴリ名を入力してください。");
 
     if (id) {
-      await apiPost("updateCategory", {
-        id,
-        name,
-        color
-      });
-
-      showMessage(
-        "categoryMessage",
-        "カテゴリを更新しました。"
-      );
+      await apiPost("updateCategory", { id, name, color });
+      showMessage("categoryMessage", "カテゴリを更新しました。");
     } else {
-      await apiPost("addCategory", {
-        name,
-        color
-      });
-
-      showMessage(
-        "categoryMessage",
-        "カテゴリを追加しました。"
-      );
+      await apiPost("addCategory", { name, color });
+      showMessage("categoryMessage", "カテゴリを追加しました。");
     }
 
     resetCategoryForm();
@@ -670,7 +660,6 @@ $("categoryForm").addEventListener("submit", async event => {
 
 function resetCategoryForm() {
   $("categoryForm").reset();
-
   $("editingCategoryId").value = "";
   $("categoryColor").value = "#2774E6";
   $("categoryColorCode").textContent = "#2774E6";
@@ -678,13 +667,10 @@ function resetCategoryForm() {
   $("cancelCategoryEditButton").hidden = true;
 }
 
-$("cancelCategoryEditButton").addEventListener(
-  "click",
-  () => {
-    resetCategoryForm();
-    showMessage("categoryMessage", "");
-  }
-);
+$("cancelCategoryEditButton").addEventListener("click", () => {
+  resetCategoryForm();
+  showMessage("categoryMessage", "");
+});
 
 function renderCategories() {
   const container = $("categoryList");
@@ -701,9 +687,7 @@ function renderCategories() {
           class="category-color-dot"
           style="background:${escapeHTML(category.color)}"
         ></span>
-
         <span>${escapeHTML(category.name)}</span>
-
         <code>${escapeHTML(category.color)}</code>
       </div>
 
@@ -727,26 +711,17 @@ function renderCategories() {
 }
 
 $("categoryList").addEventListener("click", async event => {
-  const button = event.target.closest(
-    "button[data-category-action]"
-  );
-
+  const button = event.target.closest("button[data-category-action]");
   if (!button) return;
 
-  const category = categories.find(
-    item => item.id === button.dataset.id
-  );
-
+  const category = categories.find(c => c.id === button.dataset.id);
   if (!category) return;
 
   if (button.dataset.categoryAction === "edit") {
     $("editingCategoryId").value = category.id;
     $("categoryName").value = category.name;
     $("categoryColor").value = category.color;
-
-    $("categoryColorCode").textContent =
-      category.color.toUpperCase();
-
+    $("categoryColorCode").textContent = category.color.toUpperCase();
     $("saveCategoryButton").textContent = "カテゴリを更新";
     $("cancelCategoryEditButton").hidden = false;
 
@@ -760,23 +735,13 @@ $("categoryList").addEventListener("click", async event => {
   }
 
   if (button.dataset.categoryAction === "delete") {
-    const confirmed = confirm(
-      `カテゴリ「${category.name}」を削除しますか？`
-    );
-
+    const confirmed = confirm(`カテゴリ「${category.name}」を削除しますか？`);
     if (!confirmed) return;
 
     try {
-      await apiPost("deleteCategory", {
-        id: category.id
-      });
-
-      showMessage(
-        "categoryMessage",
-        "カテゴリを削除しました。"
-      );
-
+      await apiPost("deleteCategory", { id: category.id });
       await refreshAll();
+      showMessage("categoryMessage", "カテゴリを削除しました。");
     } catch (error) {
       showMessage(
         "categoryMessage",
@@ -788,8 +753,9 @@ $("categoryList").addEventListener("click", async event => {
 });
 
 /* ==================================================
-   初期表示
+   初期化
 ================================================== */
 
+setupDiscordCheckbox();
 resetScheduleForm();
 resetCategoryForm();
